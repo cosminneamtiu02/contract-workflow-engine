@@ -1,6 +1,6 @@
-# Project Template
+# Contract Workflow Engine
 
-Full-stack monorepo template with React frontend, FastAPI backend, and PostgreSQL.
+Full-stack monorepo for the Contract Workflow Engine — React frontend, FastAPI backend, PostgreSQL.
 
 ## Tech Stack
 
