@@ -57,9 +57,15 @@ tasks:
       - task: test:unit
 
   check:errors:
-    desc: Verify error contracts are in sync
+    desc: Verify error contracts are in sync (regenerates, then fails if drift detected)
     cmds:
-      - task: errors:generate -- --check
+      - task: errors:generate
+      - |
+        cd {{.ROOT_DIR}}
+        if ! git diff --exit-code apps/backend/app/exceptions/_generated/ packages/error-contracts/src/generated.ts packages/error-contracts/src/required-keys.json; then
+          echo "ERROR: Error contracts drifted from errors.yaml. Commit the regenerated files."
+          exit 1
+        fi
       - task: errors:check
 
   # ── Testing ──────────────────────────────────────────────────
@@ -164,13 +170,14 @@ tasks:
     desc: Validate translations against error contracts
     dir: packages/error-contracts
     cmds:
-      - uv run --with pyyaml python -c "
-        from pathlib import Path;
-        from scripts.validate_translations import validate;
-        errors = validate(Path('src/required-keys.json'), Path('../../apps/frontend/src/i18n/locales'));
+      - |
+        uv run --with pyyaml python -c "
+        from pathlib import Path
+        from scripts.validate_translations import validate
+        errors = validate(Path('src/required-keys.json'), Path('../../apps/frontend/src/i18n/locales'))
         if errors:
-            for e in errors: print(f'ERROR: {e}');
-            raise SystemExit(1);
+            for e in errors: print(f'ERROR: {e}')
+            raise SystemExit(1)
         print('All translations valid')
         "
 
